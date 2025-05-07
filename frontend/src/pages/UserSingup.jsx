@@ -1,34 +1,40 @@
+import axios from 'axios'
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-//import axios from 'axios'
-
+import { Link, Navigate } from 'react-router-dom'
 
 
 const UserSignup = () => {
-  const [MobileNumber, setMobileNumber] = useState('')
+  const [mobilenumber, setMobileNumber] = useState('')
   const [password, setPassword] = useState('')
   const [fullname, setFullName] = useState('')
   const [username, setUserName] = useState('')
-  //const [ userData, setUserData ] = useState({})
-  //const navigate = useNavigate()
+  // const [ userData, setUserData ] = useState({})
+  // const navigate = useNavigate()
 
   const submitHandler = async (e) => {
-    e.preventDefault()
-    const newUser = {
-      mobilenumber: MobileNumber,
-      fullname: fullname,
-      username: username,
-      password: password
-    }
+      e.preventDefault();
+      const userData = {
+        mobilenumber: mobilenumber,
+        password: password,
+        fullname: fullname,
+        username: username
+      }
+  
+      // const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/user/UserSingup`,userData)
+      if(response.status === 201) {
+        const data = response.data
+        localStorage.setItem('token', data.token)
+        Navigate('./EmailSignup')
+      }
 
     setMobileNumber('')
+    setPassword('')
     setFullName('')
     setUserName('')
-    setPassword('')
 
   }
   return (
-    <div className='h-screen flex justify-between flex-col w-full bg-white'>
+    <div className='h-screen flex justify-between flex-col w-full bg-white '>
       <div className='p-4 h-screen flex flex-col justify-between'>
         <form
           className='border-gray-400 border-[1px] p-6 mb-[6rem]'
@@ -57,7 +63,7 @@ const UserSignup = () => {
             <div className='-mt-4'>
               <input
                 required
-                value={MobileNumber}
+                value={mobilenumber}
                 onChange={(e) => {
                   setMobileNumber(e.target.value);
                 }}
@@ -105,10 +111,10 @@ const UserSignup = () => {
               <p className='text-[10px] mt-3 -mb-2 leading-tight'>By Signing up, you agree to our <span className='text-blue-950'><Link to='#'>Terms</Link></span>, <span className='text-blue-950'>Data Policy</span> and <span className='text-blue-950'>Cookies Policy. </span></p>
             </div>
 
-            <button
+            <Link to='/EmailSignup'><button 
               className='bg-blue-500 text-white mb-2 mt-2 rounded px-4 py-1 border w-full text-lg placeholder:text-base'
-            ><Link to='/EmailSignup' >Sign up</Link>
-            </button>
+             >Sign up
+            </button></Link>
 
           </div>
         </form>
