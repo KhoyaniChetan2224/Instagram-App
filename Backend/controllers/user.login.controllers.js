@@ -1,44 +1,40 @@
-const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
-const User = require('../modelse/user.login.modelse'); // Adjust the path as per your project structure
+const userModel = require('../models/user.login.model');
+const userService = require('../services/user.login.service');
+const { validationResult } = require('express-validator');
 
-// User login controller
-const loginUser = async (req, res) => {
-    const { email, password } = req.body;
 
-    try {
-        // Check if user exists
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        // Compare passwords
-        const isPasswordValid = await bcrypt.compare(password, user.password);
-        if (!isPasswordValid) {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
-
-        // Generate JWT token
-        const token = jwt.sign(
-            { id: user._id, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: '1h' }
-        );
-
-        res.status(200).json({
-            message: 'Login successful',
-            token,
-            user: {
-                id: user._id,
-                username: user.username,
-                email: user.email,
-            },
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+module.exports.registerUser = async (req, res, next) => {
+    const errors = validationResult(req);
+    if( !errors.isEmpty()){
+        return res.status(400).json({ errors: errors.array() });
     }
-};
+    const { mobilnumber, fullname, password, username } = req.body;
+    const hashedPassword = await userModel.hashPassword(password);
 
-module.exports = { loginUser };
+    const user = await userService.creatUser({
+        mobilnumber: mobilnumber,
+        fullname: fullname, 
+        password: hashedPassword,
+        username: username
+    });
+
+    const token = user.generateAuthToken();
+
+    res.status(201).json({ token, user });
+}
+
+module.exports.loginUser = async (req, res, next) => {
+    const { username, password } = req.body;
+    const user = await userModel.findOne({ username: username });
+    if (!user) {
+        return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+        return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    const token = user.generateAuthToken();
+    res.status(200).json({ token, user });
+}
