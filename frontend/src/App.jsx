@@ -25,6 +25,8 @@ import StoriesArchive from './pages/Profile-Page/ActivitySetting/StoriesArchive'
 import ViewProfile from './pages/ViewProfileUser/ViewProfile';
 import PostGrid from './pages/ViewProfileUser/components/PostGrid';
 import ProfileHeader from './pages/ViewProfileUser/components/ProfileHeader';
+import Followers from './pages/footar-menu/followers';
+import Camera from './pages/camera/camera';
 
 const App = () => {
   return (
@@ -37,6 +39,8 @@ const App = () => {
         <Route path='/EmailSignup' element={< EmailSignup />} />
         <Route path='/RobotSecurityPage' element={< RobotSecurityPage />} />
         <Route path='/OpenHomePage' element={< OpenHomePage />} />
+        <Route path='/camera' element={< Camera />} />
+        <Route path='/followers' element={< Followers />} />
         <Route path='/Likebutton' element={< Likebutton />} />
         <Route path='/Massege' element={< Massege />} />
         <Route path='/YourStory' element={< YourStory />} />
@@ -53,8 +57,8 @@ const App = () => {
         <Route path='/Saved' element={< Saved />} />
         <Route path='/StoriesArchive' element={< StoriesArchive />} />
         <Route path='/ViewProfile' element={< ViewProfile />} />
-        <Route path='PostGrid' element={< PostGrid />} />
-        <Route path='ProfileHeader' element={< ProfileHeader />} />
+        <Route path='/PostGrid' element={< PostGrid />} />
+        <Route path='/ProfileHeader' element={< ProfileHeader />} />
       </Routes>
     </div>
   )
