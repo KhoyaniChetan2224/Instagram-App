@@ -8,6 +8,7 @@ const EditProfile = () => {
   const [pronouns, setPronouns] = useState("");
   const [bio, setBio] = useState("");
   const [gender, setGender] = useState("Prefer not to say");
+  const [profilePic, setProfilePic] = useState(true);
 
   const Navigate = useNavigate();
 
@@ -19,6 +20,7 @@ const EditProfile = () => {
       pronouns: pronouns,
       bio: bio,
       gender: gender,
+      profilePic: profilePic
     };
 
     setUname("");
@@ -26,6 +28,7 @@ const EditProfile = () => {
     setPronouns("");
     setBio("");
     setGender("");
+    setProfilePic(true);
   };
 
   //const [gender, setGender] = useState("Prefer not to say");
@@ -34,26 +37,64 @@ const EditProfile = () => {
   const [isEnabled, setIsEnabled] = useState(false);
 
   return (
-    <div>
+    <div className="overflow-hidden w-screen">
       <form onSubmit={(e) => submitHandler(e)}>
         {/* Aro, Edit Profile */}
         <div className="max-w-md mx-auto px-4 py-6 text-center space-y-4">
         {/* Header */}
-        <div className="flex items-center space-x-3">
+        {/* <div className="flex items-center space-x-3">
         <Link to="/Profile"><ArrowLeft className="w-5 h-5 cursor-pointer" /></Link>
             <h1 className="text-xl font-semibold">Edit profile</h1>
+            <button >update</button>
+        </div> */}
+
+
+        <div className="flex items-center space-x-3">
+          <Link to="/Profile">
+            <ArrowLeft className="w-5 h-5 cursor-pointer" />
+          </Link>
+          <h1 className="text-xl font-semibold flex-1 text-left">Edit profile</h1>
+          <button
+            type="submit"
+            onClick={ (e) =>
+              submitHandler(e)
+            }
+            className="text-black mt-2 border-gray-300 border-[1px] px-4 py-1 rounded font-medium transition"
+          >
+            Update
+          </button>
         </div>
+
 
         {/* Profile Image */}
         <div className="flex flex-col items-center space-y-2">
-            <img
-            src="https://i.pinimg.com/736x/03/a7/4e/03a74e598f5a928a1214d37d530ed085.jpg" // Replace with your image
-            alt="Profile"
-            className="w-20 h-[5rem] rounded-full object-cover"
+           {profilePic ? (
+              <img
+                src={profilePic}
+                className="w-20 h-[5rem] rounded-full object-cover border-2"
+              />
+            ) : null}
+            <input
+              type="file"
+              accept="image/*"
+              id="profilePicInput"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const file = e.target.files[0];
+                if (file) {
+                  const reader = new FileReader();
+                  reader.onloadend = () => {
+                    // Show preview
+                    setProfilePic(reader.result);
+                  };
+                  reader.readAsDataURL(file);
+                }
+              }}
             />
-            <p className="text-blue-600 font-medium cursor-pointer">
-            Change profile picture
-            </p>
+            <label htmlFor="profilePicInput" className="cursor-pointer text-blue-600 font-medium">
+              Change profile picture
+            </label>
+            {typeof setProfilePic === "undefined" ? null : null}
         </div>
         </div>
 
