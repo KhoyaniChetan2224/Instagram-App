@@ -1,38 +1,38 @@
-import axios from 'axios'
-import React, { useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-
+import axios from 'axios';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 
 const UserSignup = () => {
-  const [mobilenumber, setMobileNumber] = useState('')
-  const [password, setPassword] = useState('')
-  const [fullname, setFullName] = useState('')
-  const [username, setUserName] = useState('')
-  // const [ userData, setUserData ] = useState({})
-  // const navigate = useNavigate()
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [fullname, setFullName] = useState('');
+  const [username, setUserName] = useState('');
+  const navigate = useNavigate();
 
   const submitHandler = async (e) => {
-      e.preventDefault();
-      const userData = {
-        mobilenumber: mobilenumber,
-        password: password,
-        fullname: fullname,
-        username: username
+    e.preventDefault();
+    const userData = {
+      email,
+      password,
+      fullname,
+      username
+    };
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/UserSignup`, userData);
+      if (response.status === 201) {
+        const data = response.data;
+        localStorage.setItem('token', data.token);
+        navigate('/EmailSignup');
       }
-  
-      // const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/user/UserSingup`,userData)
-      if(response.status === 201) {
-        const data = response.data
-        localStorage.setItem('token', data.token)
-        Navigate('./EmailSignup')
-      }
-
-    setMobileNumber('')
-    setPassword('')
-    setFullName('')
-    setUserName('')
-
+    } catch (error) {
+      console.error("Signup failed:", error);
+    }
+    setEmail('');
+    setPassword('');
+    setFullName('');
+    setUserName('');
   }
+
   return (
     <div className='h-screen flex justify-between flex-col w-full bg-white '>
       <div className='p-4 h-screen flex flex-col justify-between'>
@@ -63,12 +63,13 @@ const UserSignup = () => {
             <div className='-mt-4'>
               <input
                 required
-                value={mobilenumber}
+                value={email}
                 onChange={(e) => {
-                  setMobileNumber(e.target.value);
+                  setEmail(e.target.value);
                 }}
+                formNoValidate='a-z0-9@$&#_'
                 className='bg-slate-100 rounded-lg px-4 border-gray-400 py-1 border w-full text-lg placeholder:text-base'
-                type="text"
+                type="email"
                 placeholder='Mobile Number or Email'
               />
 
@@ -101,7 +102,7 @@ const UserSignup = () => {
                   setUserName(e.target.value);
                 }}
                 className='bg-slate-100 mb-2 mt-1 border-gray-400 rounded-lg px-4 py-1 border w-full text-lg placeholder:text-base'
-                type="email"
+                type="username"
                 placeholder='Username'
               />
             </div>
@@ -111,10 +112,10 @@ const UserSignup = () => {
               <p className='text-[10px] mt-3 -mb-2 leading-tight'>By Signing up, you agree to our <span className='text-blue-950'><Link to='#'>Terms</Link></span>, <span className='text-blue-950'>Data Policy</span> and <span className='text-blue-950'>Cookies Policy. </span></p>
             </div>
 
-            <Link to='/EmailSignup'><button 
+            <button 
               className='bg-blue-500 text-white mb-2 mt-2 rounded px-4 py-1 border w-full text-lg placeholder:text-base'
              >Sign up
-            </button></Link>
+            </button>
 
           </div>
         </form>
@@ -125,7 +126,7 @@ const UserSignup = () => {
 
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default UserSignup
+export default UserSignup;
