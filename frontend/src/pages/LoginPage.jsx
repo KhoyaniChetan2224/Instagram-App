@@ -1,32 +1,30 @@
 import axios from "axios";
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { UserDataContext } from "./Context/UserLogin";
 
 const LoginPage = () => {
   const [username, setUserName] = useState("");
   const [password, setPassword] = useState("");
+  
 
-  //const {user, setUser } = useContext(UserDataContext)
-  const navigate = useNavigate()
-
+  const navigate = useNavigate();
 
   const submitHandler = async (e) => {
     e.preventDefault();
     const userData = {
-      username: username,
-      password: password,
+      username,
+      password,
     };
-
-    const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/user/Login`,userData)
-    if(response.status === 200) {
-      const data = response.data
-      setUserName(data.user)
-      setPassword(data.password)
-      localStorage.setItem('token', data.token)
-      navigate('/OpenHomePage')
+    try {
+      const response = await axios.post(`${import.meta.env.VITE_BASE_URL}/users/login`, userData);
+      if (response.status === 200) {
+        const data = response.data;
+        localStorage.setItem("token", data.token); // Store token for future requests
+        navigate("/Profile");
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
     }
-
     setUserName("");
     setPassword("");
   };
@@ -66,7 +64,7 @@ const LoginPage = () => {
             />
 
             <button className="bg-blue-400 text-white mb-1 mt-6 rounded px-4 py-1 border w-full text-lg placeholder:text-base">
-              <Link to="/OpenHomePage">Login</Link>
+              Login
             </button>
 
             <p className="text-center text-xs">
