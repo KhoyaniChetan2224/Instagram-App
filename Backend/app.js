@@ -1,25 +1,31 @@
-import dotenv from 'dotenv';
+const dotenv = require('dotenv');
 dotenv.config();
-import express from 'express';
-import morgan from 'morgan';
-import userRoutes from './routes/user.routes.js';
-import aiRoutes from './routes/ai.routes.js';
-import postsRoutes from "./routes/posts.routes.js"
-import cookieParser from 'cookie-parser';
-
-
-
+const express = require('express')
+const cors = require('cors');
 const app = express();
-app.use(morgan('dev'));
+const connectToDb = require('./db/db');
+const userRoutes = require('./routes/user.login.routes');
+const userProfilepic = require('./routes/user.profile.pic');
+const postModel = require('./models/post.models');
+const Post = require('./controllers/post.controllres')
+
+
+
+connectToDb();
+
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use("/uploads", express.static("uploads"));
 
+
+app.get('/', (req, res)=>{
+    res.send("back-insta app")
+});
 app.use('/users', userRoutes);
-app.use('/ai', aiRoutes);
-app.use('/posts', postsRoutes);
+app.use('/profilpic', userProfilepic)
+app.use('/postModel', postModel)
+app.use('/post', Post)
 
-export default app;
-app.use('/users', userRoutes); // User routes
 
-module.exports = app; // Start the server
+module.exports = app;
