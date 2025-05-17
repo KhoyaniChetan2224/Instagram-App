@@ -1,10 +1,41 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import BottomNav from "../BottomNav";
 import { Link } from "react-router-dom";
-import { Flag, Plus, User, Video } from "lucide-react";
-import { Camera, Grid, PlusCircle, Heart, Radio, Sparkles } from "lucide-react";
+import { Camera, Grid, PlusCircle, Heart, Radio, Sparkles, LockIcon } from "lucide-react";
+import axios from "axios";
+
 const Profile = () => {
+  const [profile, setProfile] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
+  const [storyOpen, setStoryOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("posts");
+
+  useEffect(() => {
+    const fetchProfileAndPosts = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+      try {
+        const profileRes = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/users/profile`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setProfile(profileRes.data);
+
+        const postsRes = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/users/user-posts`,
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+        setPosts(postsRes.data);
+      } catch (err) {
+        console.error("Failed to fetch profile or posts:", err);
+      }
+      setLoading(false);
+    };
+    fetchProfileAndPosts();
+  }, []);
 
   const menuItems = [
     { label: "Reel", icon: <Camera size={20} /> },
@@ -15,45 +46,31 @@ const Profile = () => {
     { label: "AI", icon: <Sparkles size={20} />, isNew: true },
   ];
 
-  const [isOpen, setIsOpen] = useState(true);
-
-  // Dummy user list
-  const ProfileDP = ["<img scr='' />"];
-  const users = [];
-
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-
-  const [storyOpen, setStoryOpen] = useState(false);
-
-  const story = [];
-
-  const storyButton = () => {
-    setStoryOpen(!storyOpen);
-  };
-
-  const [activeTab, setActiveTab] = useState("posts");
-
   const tabs = [
     { id: "posts", label: "Posts" },
     { id: "videos", label: "Videos" },
     { id: "tagged", label: "Tagged" },
   ];
 
+  const toggleDropdown = () => {
+    setIsOpen(!isOpen);
+  };
+
+  const storyButton = () => {
+    setStoryOpen(!storyOpen);
+  };
+
+  if (loading) return <div>Loading...</div>;
+
   return (
     <div>
       <form>
         {/* Header */}
         <section>
-          <div //className="-mb-[38.7rem]"
-          >
-            <img
-              className="px-[11.2rem] -ml-[10.6rem] mt-2"
-              src="https://cdn-icons-png.flaticon.com/512/3596/3596115.png"
-            ></img>
+          <div>
+            <LockIcon className="px-[0.2rem] ml-[0.4rem] mt-1" />
             <div className="-mt-[1.4rem] ml-8 font-medium" alt="username">
-              username
+              {profile?.username }
             </div>
             <div>
               <img
@@ -132,35 +149,61 @@ const Profile = () => {
         <section>
           <div className="-mt-[37.9rem]">
             <img
-              className="rounded-full size-[4rem] mb-[0.5rem] ml-8"
-              src="https://i.pinimg.com/736x/03/a7/4e/03a74e598f5a928a1214d37d530ed085.jpg"
-            ></img>
-
-            {/* Instagram Bio */}
-            <input
-              className="ml-7 text-black w-[7rem]"
-              typeof="text"
-              alt="text"
+              className="rounded-full size-[4.2rem] mb-[0.5rem] ml-8"
+              onChange={
+                storyButton
+                
+              }
+              onClick={async (e) => {
+                e.preventDefault();
+                const fileInput = document.createElement('input');
+                fileInput.type = 'file';
+                fileInput.accept = 'image/*';
+                fileInput.onchange = async (event) => {
+                  const file = event.target.files[0];
+                  if (!file) return;
+                  const formData = new FormData();
+                  formData.append('profileImage', file);
+                  try {
+                    const token = localStorage.getItem("token");
+                    const res = await axios.put(
+                      `${import.meta.env.VITE_BASE_URL}/users/profile-image`,
+                      formData,
+                      {
+                        headers: {
+                          Authorization: `Bearer ${token}`,
+                          'Content-Type': 'multipart/form-data'
+                        }
+                      }
+                    );
+                    setProfile((prev) => ({ ...prev, profileImage: res.data.profileImage }));
+                  } catch (err) {
+                    alert('Failed to upload profile image');
+                  }
+                };
+                fileInput.click();
+              }}
+              src={profile?.profileImage}
             />
-            <section className="h-screen mt-[5rem]">
-              <div className="-mt-[11.1rem] font-semibold  ml-36 text-[1.3rem]">
-                2
-              </div>{" "}
-              <span className="ml-[9.2em] text-[0.9rem] font-normal">
+            <section className="h-screen mt-[7rem]">
+              <div className="-mt-[11.1rem] font-semibold  ml-[8.5rem] text-[1.3rem]">
+                {posts.length}
+              </div>
+              <span className="ml-[9.5em] text-[0.9rem] font-normal">
                 Posts
               </span>
-              <div className="-mt-[3.5rem] font-semibold ml-[13rem] text-[1.3rem]">
-                235
-              </div>{" "}
+              <Link to='/followers'><div className="-mt-[3.5rem] font-semibold ml-[13rem] text-[1.3rem]">
+                {profile?.followers?.length || 0}
+              </div>
               <span className="ml-[12.3rem] text-[0.9rem] font-normal">
                 followers
               </span>
               <div className="-mt-[3.5rem] font-semibold ml-[18.5rem] text-[1.3rem]">
-                255
-              </div>{" "}
+                {profile?.following?.length || 0}
+              </div>
               <span className="ml-[17.8rem] text-[0.9rem] font-normal">
                 following
-              </span>
+              </span></Link>
             </section>
           </div>
         </section>
@@ -206,18 +249,7 @@ const Profile = () => {
             {isOpen && (
               <div className="absolute z-10 mt-4 w-[7.5rem] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
                 <div className="py-1">
-                  {users.map((user, ProfileDP, index) => (
-                    <button
-                      key={index}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => {
-                        alert(`Clicked on ${user}`);
-                        setIsOpen(false); // close dropdown after click
-                      }}
-                    >
-                      {user},{ProfileDP}
-                    </button>
-                  ))}
+                  {/* Dummy user list */}
                 </div>
                 <div className="-mt-[0.2rem]">
                   <img
@@ -249,18 +281,7 @@ const Profile = () => {
             {isOpen && (
               <div className="absolute ml-[8rem] z-10 mt-[1rem] w-[7.5rem] origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5">
                 <div className="py-1">
-                  {users.map((user, ProfileDP, index) => (
-                    <button
-                      key={index}
-                      className="block w-full text-left px-5 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                      onClick={() => {
-                        alert(`Clicked on ${user}`);
-                        setIsOpen(false); // close dropdown after click
-                      }}
-                    >
-                      {user},{ProfileDP}
-                    </button>
-                  ))}
+                  {/* Dummy user list */}
                 </div>
                 <div className="-mt-[0.2rem]">
                   <img
@@ -299,17 +320,25 @@ const Profile = () => {
               ></img>
             </div>
             <div className="py-1">
-              {story.map((story, index) => (
-                <button
-                  key={index}
-                  onClick={storyButton}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                >
-                  {story}
-                </button>
-              ))}
+              {/* Dummy story list */}
             </div>
           </button>
+        </section>
+
+        {/* User Posts */}
+        <section>
+          <div className="mt-8">
+            {posts.map((post) => (
+              <div key={post._id} className="mb-4">
+                <img
+                  className="rounded-lg w-full"
+                  src={post.media?.url}
+                  alt={post.caption}
+                />
+                <p>{post.caption}</p>
+              </div>
+            ))}
+          </div>
         </section>
 
         <div className="w-full">
